@@ -1,9 +1,3 @@
-/.DS_Store
-/controller/
-/exceptions/
-/log4j2.xml
 /mycontroller/
-/swen30006/
-/tiles/
-/utilities/
 /world/
+/swen30006/

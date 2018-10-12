@@ -43,11 +43,12 @@ public class Simulation extends ApplicationAdapter implements InputProcessor {
 	OrthogonalTiledMapRenderer tiledMapRenderer;
 	private enum CameraMode {WORLD, PLAYER};
 	private static CameraMode CAMERA_MODE = CameraMode.WORLD;
-	private static final int PLAYER_VIEW = 11;
+	private static final int PLAYER_VIEW = 9;
 	private static boolean gameEnded = false;
 	private static boolean gameWon = false;
 	public static boolean DEBUG_MODE = false;
 	private BitmapFont font;
+	private float unitScale;
 	
 	private static float TIME_STEP; // = 1/45f;
 	
@@ -100,7 +101,7 @@ public class Simulation extends ApplicationAdapter implements InputProcessor {
 		camera.update();
 		
 		// Define scale per unit
-		float unitScale = 1 / 32f;
+		unitScale = 1 / 32f;
 		tiledMapRenderer = new OrthogonalTiledMapRenderer(map,unitScale);
 		Gdx.input.setInputProcessor(this);
 		
@@ -248,7 +249,7 @@ public class Simulation extends ApplicationAdapter implements InputProcessor {
 		float carXPosition = world.getCar().getX();
 		float carYPosition = world.getCar().getY();
 		
-		camera.position.set(carXPosition, carYPosition, 0);
+		camera.position.set(carXPosition + 0.5f, carYPosition + 0.5f, 0);
 	}
 	
 	public static void endGame(boolean won){

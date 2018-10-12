@@ -80,6 +80,7 @@ public class Car extends Sprite{
 	}
 
 	public void update(float delta0) {
+			
 			float delta=0.25f;
 			if(Simulation.DEBUG_MODE){
 				printDebug();

@@ -32,6 +32,7 @@ public abstract class CarController {
 	 * Speeds the car up in the forward direction
 	 */
 	public void applyForwardAcceleration(){
+		//System.out.println("in super class");
 		car.applyForwardAcceleration();
 	}
 	

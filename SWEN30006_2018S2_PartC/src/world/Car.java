@@ -51,7 +51,7 @@ public class Car extends Sprite{
 	// private static int CAR_HEIGHT;
 
 	private float health;
-	private static final float MAX_HEALTH = 100000;
+	private static final float MAX_HEALTH = 100;
 	
 	public static final int VIEW_SQUARE = 4;
 
@@ -80,7 +80,7 @@ public class Car extends Sprite{
 	}
 
 	public void update(float delta0) {
-			
+		
 			float delta=0.25f;
 			if(Simulation.DEBUG_MODE){
 				printDebug();
@@ -180,6 +180,7 @@ public class Car extends Sprite{
 
 	private void applyAcceleration(float delta) {
 		// Can't accelerate if you are on certain traps!
+		
 		MapTile currentTile = World.lookUp(getX(), getY());
 		if (accelerating.isPresent() && (!currentTile.isType(MapTile.Type.TRAP) || ((TrapTile) currentTile).canAccelerate())) {
 			if (accelerating.get() == Acceleration.FORWARD) {

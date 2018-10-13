@@ -2,10 +2,12 @@ package world;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.ArrayList;
 import java.util.TreeSet;
 import java.lang.reflect.Constructor;
 
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -14,6 +16,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 
 import controller.CarController;
+import swen30006.driving.Simulation;
 import tiles.MapTile;
 import tiles.TrapTile;
 import tiles.LavaTrap;
@@ -43,6 +46,7 @@ public class World {
 	private static HashMap<Coordinate,MapTile> providedMapTiles = new HashMap<Coordinate,MapTile>();
 	private static Coordinate start, carStart;
 	private static List<Coordinate> finish = new ArrayList<Coordinate>();
+	private boolean paused = false;
 	
 	public World(TiledMap map, String controllerName){
 		World.map = map;
@@ -136,6 +140,23 @@ public class World {
 	}
 
 	public void update(float delta){
+		
+		Set<Integer> keys = Simulation.getKeys();
+		Simulation.resetKeys();
+		for (int k: keys) {
+			switch (k){
+		        case Input.Keys.P:
+		        	paused = !paused;
+		            break;
+		        default:
+		        	//do nothing
+			}
+		}
+	
+		if (paused) {
+			return;
+		}
+		
 		controller.update();
 
         // Update the car

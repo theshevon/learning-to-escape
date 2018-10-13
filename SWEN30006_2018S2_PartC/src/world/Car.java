@@ -51,7 +51,7 @@ public class Car extends Sprite{
 	// private static int CAR_HEIGHT;
 
 	private float health;
-	private static final float MAX_HEALTH = 100;
+	private static final float MAX_HEALTH = 100000;
 	
 	public static final int VIEW_SQUARE = 4;
 
@@ -292,6 +292,7 @@ public class Car extends Sprite{
 	}
 
 	public HashMap<Coordinate,MapTile> getView(){
+		
 		int currentX = Math.round(getX());
 		int currentY = Math.round(getY());
 

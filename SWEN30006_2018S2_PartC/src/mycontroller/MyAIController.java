@@ -22,19 +22,18 @@ public class MyAIController extends CarController{
 	
 	//Used to hold information about a tile. Used to find easiest path
 	public class TileData{
+
+		private int damage;
+		private int distance; 
+		private MapTile tile;
+		//public WorldSpatial.Direction direction; 
+		ArrayList<Coordinate> path;
 		public TileData(MapTile tile) {
 			this.tile= tile;
 			damage = Integer.MAX_VALUE;
 			distance = Integer.MAX_VALUE; 
 			path = new ArrayList<Coordinate>();
 		}
-		private int damage;
-		private int distance; 
-		private float currentSpeed;
-		private MapTile tile;
-		public WorldSpatial.Direction direction; 
-		ArrayList<Coordinate> path;
-
 		
 		/* getters and setters */
 		public MapTile getTile() {
@@ -46,9 +45,6 @@ public class MyAIController extends CarController{
 		public Integer getDistance() {
 			return distance;
 		}
-		public WorldSpatial.Direction getDirection(){
-			return direction;
-		}
 		public void setDamage(Integer damage) {
 			 this.damage= damage;
 		}
@@ -59,9 +55,7 @@ public class MyAIController extends CarController{
 		public void setDistance(Integer distance) {
 			 this.distance= distance;
 		}
-		public void setDirection(WorldSpatial.Direction direction) {
-			 this.direction= direction;
-		}
+
 		public void replacePath(ArrayList<Coordinate> path) {
 			this.path = new ArrayList<Coordinate>(path);
 		}
@@ -113,72 +107,48 @@ public class MyAIController extends CarController{
 		updateMapData();
 		determineMove();
 		
-		
 	}
 	
 	//logic for determining next move , note currently doesn't look for health tiles
 	// selectLowestScoring(healthTiles) can be used
-	//currently goes straight for keys when it finds them
 	private void determineMove() {
+		
+
+		//removes any already discovered keys
+		keyTiles = removeFoundKeys(keyTiles);
+		//holds the lowest scoring coordinate in each category
+		Coordinate targetKey = selectLowestScoring(keyTiles);
+		Coordinate targetEdge = selectLowestScoring(edgeTiles);
+		Coordinate targetHealth = selectLowestScoring(healthTiles);
+		Coordinate targetExit  = selectLowestScoring(exitTiles);
+
+		//if all the keys have been found
 		if(getKeys().size()< numKeys()) {
-			keyTiles = removeFoundKeys(keyTiles);
-			if(keyTiles.size() >0  && selectLowestScoring(keyTiles)!= null) {
-				//System.out.println("Looking for keys");
-				//System.out.println(currentMap.get(selectLowestScoring(keyTiles)).getPath());
-				//System.out.println(selectLowestScoring(keyTiles).toString());
-				findPath(selectLowestScoring(keyTiles));
+			
+			
+			if(targetEdge != null && currentMap.get(targetEdge).getDamage() == 0) {
+				findPath(targetEdge);
+			}
+			else if(targetKey!= null) {
+				findPath(targetKey);
 			}
 			else {
-				//System.out.println("Looking for edges");
-				findPath(selectLowestScoring(edgeTiles));
+				findPath(targetEdge);
 			}
 		}
+		//if there are still keys to get
 		else{
-			if(exitTiles.size() >0  && selectLowestScoring(exitTiles)!= null) {
-				findPath(selectLowestScoring(exitTiles));
+			if(targetExit!= null) {
+				findPath(targetExit);
 			}
 			else {
-				//System.out.println("Looking for edges");
-				findPath(selectLowestScoring(edgeTiles));
+				findPath(targetEdge);
 			}
 		}
-}
-	
-	//test function
-	private void printstuff(){
-	
-		System.out.println("List of Edges");
-		for(Coordinate coord : edgeTiles) {
-			System.out.println(coord.toString());
-		} 
-		System.out.println("current coord :" + carCoord);
-		System.out.print("Keys:" + keyTiles.size());
-		System.out.println("    health:" + healthTiles.size());
-		System.out.print("exit:" + exitTiles.size());
-		System.out.println("    edges:" + edgeTiles.size());
-		System.out.println("total squares:" + mapWidth()*mapHeight());
-		System.out.println("Explored squares(includes all walls): " + currentMap.size());
-		printInfo();
 
 	}
-	//test function
-	private void printInfo() {
-		for(Coordinate coord :healthTiles) {
-			System.out.println("Health at : " + coord.toString() + "  Distance of : " + currentMap.get(coord).getDamage());
-		}
-		for(Coordinate coord :keyTiles) {
-			System.out.println("Keys at : " + coord.toString() + "  Distance of : " + currentMap.get(coord).getDamage());
-		}
-		for(Coordinate coord :exitTiles) {
-			System.out.println("exitTiles at : " + coord.toString() + "  Distance of : " + currentMap.get(coord).getDamage());
-		}
-	}
-	private void printMap() {
-		for(Coordinate key : currentMap.keySet()) {
-			System.out.println(key.toString() + "   " + currentMap.get(key).getDamage());
-		}
-		System.out.println("current coord" + carCoord);
-	}
+
+	
 	
 	//adds new tiles, checks for edges
 	private void updateMapData() {
@@ -197,11 +167,12 @@ public class MyAIController extends CarController{
 	
 	private void calculateDistances() {
 
-		ArrayList<Coordinate> unexploredKeys;
 		clearScores();
+		ArrayList<Coordinate> unexploredKeys;
 		updateInitialCoords();
 		unexploredKeys = removeWalls();
-		iterate(unexploredKeys);
+		unexploredKeys.remove(carCoord);
+		findShortestDistances(unexploredKeys);
 		
 		
 		//clear previous scores
@@ -214,7 +185,7 @@ public class MyAIController extends CarController{
 		
 	}
 	
-	private void iterate(ArrayList<Coordinate> unexploredKeys) {
+	private void findShortestDistances(ArrayList<Coordinate> unexploredKeys) {
 		Coordinate currentCoord;
 		while(unexploredKeys.size() !=0) {
 			currentCoord = selectLowestScoring(unexploredKeys);
@@ -258,7 +229,7 @@ public class MyAIController extends CarController{
 	private ArrayList<Coordinate> removeWalls() {
 		ArrayList<Coordinate> tempList = new ArrayList<>();
 		for(Coordinate coord : currentMap.keySet()) {
-			if(currentMap.get(coord).getType() != MapTile.Type.WALL && coord != carCoord){
+			if(currentMap.get(coord).getType() != MapTile.Type.WALL){
 				tempList.add(coord);
 			}
 		}
@@ -272,13 +243,15 @@ public class MyAIController extends CarController{
 		}
 	}
 
-	
 	private void updateInitialCoords(){
+
 		//Initialize starting coordinate
 		ArrayList<Coordinate> tempPath = new ArrayList<>();
 		//tempPath.add(carCoord);
 		currentMap.get(carCoord).setDamage(0);
 		currentMap.get(carCoord).setDistance(0);
+	
+		
 		//if moving
 		//update front and sides as normal cost (in direction of movement)
 		//update rear to be cost of coming to a halt +normal cost
@@ -286,7 +259,7 @@ public class MyAIController extends CarController{
 			//update behind
 			int tempDamage = 0;
 			if( currentMap.get(carCoord).getTile() instanceof LavaTrap){
-				tempDamage = LAVADAMAGE;
+				tempDamage =LAVADAMAGE;
 			}
 			/*experiment with removing pointer to self*/
 			if(movingForward) {
@@ -307,8 +280,8 @@ public class MyAIController extends CarController{
 		//update behind and front as normal cost
 		//for sides find min of moving forwards than back + normal cost left or right
 		else {
-			updateScore(carCoord, getFront(carCoord, carDirection));
-			updateScore(carCoord, getBehind(carCoord, carDirection));
+			updateScore(getFront(carCoord, carDirection),carCoord);
+			updateScore(getBehind(carCoord, carDirection), carCoord);
 		}
 
 	}
@@ -354,29 +327,20 @@ public class MyAIController extends CarController{
 				applyBrake();
 			}
 			else if(destination.equals(getLeft(carCoord, carDirection))) {
-				if(movingForward) {
-					turnLeft();
-				}
-				else {
-					turnRight();
-				}
+				turnLeft();
 			}
 			else if(destination.equals(getRight(carCoord, carDirection))) {
-				if(movingForward) {
-					turnRight();
-				}
-				else {
-					turnLeft();
-				}
+				turnRight();
+
 			}
 			else if(destination.equals(getFront(carCoord, carDirection))) {
 				if(!movingForward) {
-					applyForwardAcceleration();
+					applyBrake();
 				}
 			}
 			else if(destination.equals(getBehind(carCoord, carDirection))) {
 				if(movingForward) {
-					applyReverseAcceleration();
+					applyBrake();;
 				}
 		
 			}
@@ -404,6 +368,8 @@ public class MyAIController extends CarController{
 			int potentialDistance = distance;
 			int potentialDamage = damage;
 			potentialPath.add(sourceCoord);
+
+
 			//used for 
 			TileData sourceData = currentMap.get(sourceCoord);
 			TileData subjectData = currentMap.get(subjectCoord);
@@ -413,45 +379,16 @@ public class MyAIController extends CarController{
 			//only update if the tile is inside the current map is not a Wall or MudTrap
 			if( subjectData.getType() != MapTile.Type.WALL && !(subjectData.getTile() instanceof MudTrap)) {
 				
+			
 				//if grass tile, keep updating tiles in a straight line until a non grass tile is reached
 				if(sourceData.getTile() instanceof GrassTrap) {
-					int xdiff = subjectCoord.x -sourceCoord.x;
-					int ydiff = subjectCoord.y - sourceCoord.y;
-					Coordinate currentCoord= subjectCoord;
-					//ensures that tiles outisde the map are not indexed
-					while(currentMap.containsKey(currentCoord) ) {
-						
-						TileData currentData= currentMap.get(currentCoord);
-						potentialDistance++;
-						potentialPath.add(currentCoord);
-						
-						if(currentData.getTile() instanceof GrassTrap) {
-							//updates grass tiles
-							updateTile(currentCoord, potentialDamage, potentialDistance, potentialPath);	
-						}
-						else if(currentData.getType() != MapTile.Type.WALL && !(currentData.getTile() instanceof MudTrap)) {
-							//updates the tile reached after the grass tiles
-							//If the tile is lava increase the potential damage of this route
-							if(subjectData.getTile() instanceof LavaTrap){
-								potentialDamage= potentialDamage + LAVADAMAGE;
-								
-							}
-							updateTile(subjectCoord, potentialDamage, potentialDistance, potentialPath);
-							break;
-						}
-						else {
-							break;
-						}
-						//increments the coordinate in a straight line
-						currentCoord = new Coordinate(currentCoord.x + xdiff, currentCoord.y + ydiff);
-					}
+					updateGrassScore(subjectCoord, sourceCoord, potentialDamage, potentialDistance, potentialPath);
 				}
 				else {
 					potentialDistance ++;
 					//If the tile is lava increase the potential damage of this route
 					if(subjectData.getTile() instanceof LavaTrap){
 						potentialDamage= potentialDamage + LAVADAMAGE;
-						
 					}
 					updateTile(subjectCoord, potentialDamage, potentialDistance, potentialPath);
 				}
@@ -461,102 +398,67 @@ public class MyAIController extends CarController{
 	}
 	
 	private void updateScore(Coordinate subjectCoord , Coordinate sourceCoord) {
+
 		if(currentMap.containsKey(sourceCoord)){
 			ArrayList<Coordinate> potentialPath = new ArrayList<Coordinate>();
 			updateScore(subjectCoord,sourceCoord, currentMap.get(sourceCoord).getDamage() , currentMap.get(sourceCoord).getDistance(), potentialPath );	
 		}
 
 	}
+	
+	private void updateGrassScore(Coordinate subjectCoord , Coordinate sourceCoord, int potentialDamage, int potentialDistance, ArrayList<Coordinate> path) {
+		int xdiff = subjectCoord.x -sourceCoord.x;
+		int ydiff = subjectCoord.y - sourceCoord.y;
+		ArrayList<Coordinate> potentialPath = new ArrayList<>(path);
+		Coordinate currentCoord= subjectCoord;
+		
+		//ensures that tiles outisde the map are not indexed
+		while(currentMap.containsKey(currentCoord) ) {
+			
+			TileData currentData= currentMap.get(currentCoord);
+			potentialDistance++;
+			potentialPath.add(currentCoord);
+			
+			if(currentData.getTile() instanceof GrassTrap) {
+				//updates grass tiles
+				updateTile(currentCoord, potentialDamage, potentialDistance, potentialPath);	
+			}
+			else if(currentData.getType() != MapTile.Type.WALL && !(currentData.getTile() instanceof MudTrap)) {
+				//updates the tile reached after the grass tiles
+				//If the tile is lava increase the potential damage of this route
+				if(currentData.getTile() instanceof LavaTrap){
+					potentialDamage= potentialDamage + LAVADAMAGE;
+				}
+				updateTile(subjectCoord, potentialDamage, potentialDistance, potentialPath);
+				break;
+			}
+			else {
+				break;
+			}
+			//increments the coordinate in a straight line
+			currentCoord = new Coordinate(currentCoord.x + xdiff, currentCoord.y + ydiff);
+		}
+		
+	}
 	//updates the tile with the given path if preferable
 	private void updateTile(Coordinate currentCoord, int potentialDamage, int potentialDistance, ArrayList<Coordinate> potentialPath) {
 
-
 		if(potentialDamage <currentMap.get(currentCoord).getDamage()) {
+
 			currentMap.get(currentCoord).setDamage(potentialDamage);
 			currentMap.get(currentCoord).setDistance(potentialDistance);
 			currentMap.get(currentCoord).replacePath(potentialPath);
 		}
 		else if(potentialDamage == currentMap.get(currentCoord).getDamage()) {
+
 			if(potentialDistance < currentMap.get(currentCoord).getDistance()) {
+				currentMap.get(currentCoord).setDamage(potentialDamage);
 				currentMap.get(currentCoord).setDistance(potentialDistance);
 				currentMap.get(currentCoord).replacePath(potentialPath);
 			}
 		}
 	}
 	
-	
-	//helper functions *************************************************
-	private Coordinate getLeft(Coordinate coord , WorldSpatial.Direction orientation) {
-		switch(orientation){
-		case EAST:
-			return getNorth(coord);
-		case NORTH:
-			return getWest(coord);
-		case SOUTH:
-			return getEast(coord);
-		case WEST:
-			return getSouth(coord);
-		default:
-			return null;
-		}	
-	}
-	private Coordinate getRight(Coordinate coord , WorldSpatial.Direction orientation) {
-		switch(orientation){
-		case EAST:
-			return getSouth(coord);
-		case NORTH:
-			return getEast(coord);
-		case SOUTH:
-			return getWest(coord);
-		case WEST:
-			return getNorth(coord);
-		default:
-			return null;
-		}	
-	}
-	private Coordinate getFront(Coordinate coord , WorldSpatial.Direction orientation) {
-		switch(orientation){
-		case EAST:
-			return getEast(coord);
-		case NORTH:
-			return getNorth(coord);
-		case SOUTH:
-			return getSouth(coord);
-		case WEST:
-			return getWest(coord);
-		default:
-			return null;
-		}	
-	}
-	private Coordinate getBehind(Coordinate coord , WorldSpatial.Direction orientation) {
-		switch(orientation){
-		case EAST:
-			return getWest(coord);
-		case NORTH:
-			return getSouth(coord);
-		case SOUTH:
-			return getNorth(coord);
-		case WEST:
-			return getEast(coord);
-		default:
-			return null;
-		}	
-	}
-	
-	private Coordinate getEast(Coordinate coord) {
-		return new Coordinate(coord.x+1 , coord.y );
-	}
-	private Coordinate getWest(Coordinate coord) {
-		return new Coordinate(coord.x-1 , coord.y );
-	}
-	private Coordinate getNorth(Coordinate coord) {
-		return new Coordinate(coord.x , coord.y +1 );
-	}
-	private Coordinate getSouth(Coordinate coord) {
-		return new Coordinate(coord.x , coord.y -1 );
-	}
-	//***********************************
-
 	//adds possible edge tiles 
 	private void addPossibleEdges() {
 		//horizontal and vertical lines 
@@ -658,6 +560,16 @@ public class MyAIController extends CarController{
 			}
 		}
 	}
+	
+	
+	
+	
+	
+	
+	
+	//**************** helper functions ***********************************
+	
+
 	//checks if a coordinate is inside the map boundaries (Integers)
 	private boolean insideBoundries(int x , int y) {
 		if(x < mapWidth() & x >= 0 & y < mapHeight() &  y >= 0 ) {
@@ -667,7 +579,6 @@ public class MyAIController extends CarController{
 			return false; 
 		}
 	}
-	//for Coordinates
 	private boolean insideBoundries(Coordinate coord) {
 		return insideBoundries(coord.x, coord.y);
 	}
@@ -681,7 +592,6 @@ public class MyAIController extends CarController{
 			return false;
 		}
 	}
-	//for Coordinate
 	private boolean inExploredMap(Coordinate coord) {
 		if(currentMap.containsKey(coord)){
 			return true;
@@ -690,6 +600,77 @@ public class MyAIController extends CarController{
 			return false;
 		}
 	}
+	
+	private Coordinate getLeft(Coordinate coord , WorldSpatial.Direction orientation) {
+		switch(orientation){
+		case EAST:
+			return getNorth(coord);
+		case NORTH:
+			return getWest(coord);
+		case SOUTH:
+			return getEast(coord);
+		case WEST:
+			return getSouth(coord);
+		default:
+			return null;
+		}	
+	}
+	private Coordinate getRight(Coordinate coord , WorldSpatial.Direction orientation) {
+		switch(orientation){
+		case EAST:
+			return getSouth(coord);
+		case NORTH:
+			return getEast(coord);
+		case SOUTH:
+			return getWest(coord);
+		case WEST:
+			return getNorth(coord);
+		default:
+			return null;
+		}	
+	}
+	private Coordinate getFront(Coordinate coord , WorldSpatial.Direction orientation) {
+		switch(orientation){
+		case EAST:
+			return getEast(coord);
+		case NORTH:
+			return getNorth(coord);
+		case SOUTH:
+			return getSouth(coord);
+		case WEST:
+			return getWest(coord);
+		default:
+			return null;
+		}	
+	}
+	private Coordinate getBehind(Coordinate coord , WorldSpatial.Direction orientation) {
+		switch(orientation){
+		case EAST:
+			return getWest(coord);
+		case NORTH:
+			return getSouth(coord);
+		case SOUTH:
+			return getNorth(coord);
+		case WEST:
+			return getEast(coord);
+		default:
+			return null;
+		}	
+	}
+	
+	private Coordinate getEast(Coordinate coord) {
+		return new Coordinate(coord.x+1 , coord.y );
+	}
+	private Coordinate getWest(Coordinate coord) {
+		return new Coordinate(coord.x-1 , coord.y );
+	}
+	private Coordinate getNorth(Coordinate coord) {
+		return new Coordinate(coord.x , coord.y +1 );
+	}
+	private Coordinate getSouth(Coordinate coord) {
+		return new Coordinate(coord.x , coord.y -1 );
+	}
+	//***********************************************************************
 	
 
 }

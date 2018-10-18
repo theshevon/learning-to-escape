@@ -428,7 +428,7 @@ public class MyAIController extends CarController{
 					unexploredKeys.remove(currentCoord);
 				}
 				else {
-					//breaks if no max value found
+					// breaks if no max value found
 					break;
 				}
 			}
@@ -536,7 +536,6 @@ public class MyAIController extends CarController{
 				if(movingForward) {
 					applyBrake();;
 				}
-		
 			}
 		}
 		else {

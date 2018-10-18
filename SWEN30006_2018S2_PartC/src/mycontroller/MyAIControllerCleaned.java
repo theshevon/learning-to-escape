@@ -103,6 +103,7 @@ public class MyAIControllerCleaned extends CarController{
 	private float carSpeed;
 	private boolean movingForward;
 	
+	// cleaned
 	public MyAIControllerCleaned(Car car) {
 		super(car);		
 
@@ -176,15 +177,15 @@ public class MyAIControllerCleaned extends CarController{
 		findShortestDistances(unexploredCoords);
 	}
 	
+	// cleaned
 	private void findShortestDistances(ArrayList<Coordinate> unexploredCoords) {
-		Coordinate currentCoord;
 		
 		while (unexploredCoords.size() != 0) {
 			
-			currentCoord = selectLowestScoring(unexploredCoords);
+			Coordinate currentCoord = selectLowestScoring(unexploredCoords);
 			
 			// possible path
-			if(currentCoord != null) {
+			if (currentCoord != null) {
 				updateScore(getNorth(currentCoord), currentCoord);
 				updateScore(getSouth(currentCoord), currentCoord);
 				updateScore(getEast(currentCoord), currentCoord);
@@ -192,7 +193,7 @@ public class MyAIControllerCleaned extends CarController{
 				unexploredCoords.remove(currentCoord);
 			}
 			else {
-				// break if no max value found
+				// break if no possible coordinate found
 				break;
 			}
 		}
@@ -304,65 +305,52 @@ public class MyAIControllerCleaned extends CarController{
 		return remainingKeyCoordinates;
 	}
 	
+	// cleaned
 	private void findPath(Coordinate coord) {
-		Coordinate currentCoord= coord ;
 		
-		//System.out.println(currentCoord);
+		Coordinate currentCoord = coord;
 		Coordinate nextCoord = currentMap.get(currentCoord).getPath().get(0);
-			//finds the tile leading to the next
-			while(!nextCoord.equals(carCoord)) {
-				currentCoord = nextCoord;
-				//System.out.println(currentCoord);
-				nextCoord = currentMap.get(currentCoord).getPath().get(0);
-
-			}
-			//System.out.println(currentMap.get(currentCoord).getPath().toString());
-			if(currentMap.get(currentCoord).getPath().size() >1){
-				//destination = Path(1)
-				System.out.println(currentCoord);
-				peformMove(currentMap.get(currentCoord).getPath().get(1));
-			}
-			else {
-				//destination is current coord
-				peformMove(currentCoord);
-			}
+		
+		// finds the tile leading to the next
+		while (!nextCoord.equals(carCoord)) {
+			currentCoord = nextCoord;
+			nextCoord = currentMap.get(currentCoord).getPath().get(0);
+		}
+		
+		if (currentMap.get(currentCoord).getPath().size() > 1){
+			performMove(currentMap.get(currentCoord).getPath().get(1));
+		}else {
+			//destination is current coord
+			performMove(currentCoord);
+		}
 	}
 	
-	private void peformMove(Coordinate destination) {
-		//need to slow down
-		if(carSpeed >0) {
-			if(destination.equals(carCoord)) {
-				applyBrake();
-			}
-			else if(destination.equals(getLeft(carCoord, carDirection))) {
-				turnLeft();
-			}
-			else if(destination.equals(getRight(carCoord, carDirection))) {
-				turnRight();
-
-			}
-			else if(destination.equals(getFront(carCoord, carDirection))) {
-				if(!movingForward) {
-					applyBrake();
-				}
-			}
-			else if(destination.equals(getBehind(carCoord, carDirection))) {
-				if(movingForward) {
-					applyBrake();;
-				}
+	// cleaned
+	private void performMove(Coordinate destination) {
 		
-			}
+		// stop if we've reached the destination
+		if (destination.equals(carCoord)) {
+			applyBrake();
 		}
-		else {
-			if(destination.equals(carCoord)) {
-				applyBrake();
+		
+		if (carSpeed > 0) {
+			
+			if (destination.equals(getLeft(carCoord, carDirection))) {
+				turnLeft();
+			} else if (destination.equals(getRight(carCoord, carDirection))) {
+				turnRight();
+			} else if (destination.equals(getFront(carCoord, carDirection))) {
+				if (!movingForward) applyBrake();
+			} else if (destination.equals(getBehind(carCoord, carDirection))) {
+				if (movingForward) applyBrake();
 			}
-			else if(destination.equals(getFront(carCoord, carDirection))) {
-				movingForward= true;
+		} else {
+	
+			if (destination.equals(getFront(carCoord, carDirection))) {
+				movingForward = true;
 				applyForwardAcceleration();
-			}
-			else if(destination.equals(getBehind(carCoord, carDirection))) {
-				movingForward =false;
+			} else if (destination.equals(getBehind(carCoord, carDirection))) {
+				movingForward = false;
 				applyReverseAcceleration();
 			}
 		}
@@ -371,7 +359,7 @@ public class MyAIControllerCleaned extends CarController{
 	private void updateScore(Coordinate targetCoord , Coordinate sourceCoord, int damage, int distance, ArrayList<Coordinate> path ) {
 
 		//checks if the tile is on the current map
-		if(currentMap.containsKey(targetCoord)) {
+		if (currentMap.containsKey(targetCoord)) {
 			ArrayList<Coordinate> potentialPath = new ArrayList<>(path);
 			int potentialDistance = distance;
 			int potentialDamage = damage;
@@ -407,9 +395,9 @@ public class MyAIControllerCleaned extends CarController{
 	
 	private void updateScore(Coordinate targetCoord , Coordinate sourceCoord) {
 
-		if(currentMap.containsKey(sourceCoord)){
+		if (currentMap.containsKey(sourceCoord)){
 			ArrayList<Coordinate> potentialPath = new ArrayList<Coordinate>();
-			updateScore(targetCoord,sourceCoord, currentMap.get(sourceCoord).getDamage() , currentMap.get(sourceCoord).getDistance(), potentialPath );	
+			updateScore(targetCoord,sourceCoord, currentMap.get(sourceCoord).getDamage(), currentMap.get(sourceCoord).getDistance(), potentialPath);	
 		}
 
 	}
@@ -449,21 +437,19 @@ public class MyAIControllerCleaned extends CarController{
 		
 	}
 	
+	// cleaned
 	private void updateTile(Coordinate currentCoord, int potentialDamage, int potentialDistance, ArrayList<Coordinate> potentialPath) {
 
-		if(potentialDamage <currentMap.get(currentCoord).getDamage()) {
+		TileData tileData = currentMap.get(currentCoord);
+		int currDamage = tileData.getDamage();
+		int currDistance = tileData.getDistance();
+		
+		if ((potentialDamage < currDamage) ||
+				(potentialDamage == currDamage && potentialDistance < currDistance)) {
 
 			currentMap.get(currentCoord).setDamage(potentialDamage);
 			currentMap.get(currentCoord).setDistance(potentialDistance);
 			currentMap.get(currentCoord).replacePath(potentialPath);
-		}
-		else if(potentialDamage == currentMap.get(currentCoord).getDamage()) {
-
-			if(potentialDistance < currentMap.get(currentCoord).getDistance()) {
-				currentMap.get(currentCoord).setDamage(potentialDamage);
-				currentMap.get(currentCoord).setDistance(potentialDistance);
-				currentMap.get(currentCoord).replacePath(potentialPath);
-			}
 		}
 	}
 	 
@@ -550,117 +536,103 @@ public class MyAIControllerCleaned extends CarController{
 		} 
 	}
 	
-	
-
 	// =================================== MAP CLASS STUFF ================================================//
 	
+	// cleaned
 	//Adds all the provided Maptile's into the current map
 	//Adds coord of points of interests (excluding edge tiles)
 	private void addToMap(HashMap<Coordinate, TileData> currentMap, HashMap<Coordinate, MapTile> currentView) {
 		
-		for( Coordinate coord : currentView.keySet()) {
-			//adds useful coords to appropriate lists
-
-			if(insideBoundaries(coord) && !inExploredMap(coord)) {
+		for (Coordinate coord : currentView.keySet()) {
+			
+			// adds useful tile coords to appropriate lists
+			if (insideBoundaries(coord) && !inExploredMap(coord)) {
 				currentMap.put(coord, new TileData(currentView.get(coord)));
 				analyseTile(coord, currentView.get(coord));
 			}
 		}
 	}
-	//Only adds Maptile's of a certain type
-	private void addToMap(HashMap<Coordinate, TileData> currentMap, HashMap<Coordinate, MapTile> ProvidedMap, 
-			MapTile.Type type) {
+	
+	// cleaned
+	// only adds tiles of a certain type
+	private void addToMap(HashMap<Coordinate, TileData> currentMap, HashMap<Coordinate, MapTile> fullMap, MapTile.Type type) {
 		
-		for( Coordinate coord : ProvidedMap.keySet()) {
-			if(ProvidedMap.get(coord).getType() == type) {
-				currentMap.put(coord, new TileData(ProvidedMap.get(coord)));
-			}
+		for (Coordinate coord : fullMap.keySet()) {
+			if (fullMap.get(coord).getType() == type) currentMap.put(coord, new TileData(fullMap.get(coord)));
 		}
 	}
 		
-	//checks if a coordinate is inside the map boundaries (Integers)
-	private boolean insideBoundaries(int x , int y) {
-		return x < mapWidth() && x >= 0 && y < mapHeight() && y >= 0;
-	}
-	private boolean insideBoundaries(Coordinate coord) {
-		return insideBoundaries(coord.x, coord.y);
-	}
+	// cleaned
+	// checks if a coordinate is inside the map boundaries (Integers)
+	private boolean insideBoundaries(int x , int y) { return x < mapWidth() && x >= 0 && y < mapHeight() && y >= 0; }
+	private boolean insideBoundaries(Coordinate coord) { return insideBoundaries(coord.x, coord.y); }
 	
-	//checks if coordinate is in the explored set0
-	private boolean inExploredMap(int x, int y) {
-		return currentMap.containsKey(new Coordinate(x, y));
-	}
-	private boolean inExploredMap(Coordinate coord) {
-		return currentMap.containsKey(coord);
-	}
+	// cleaned
+	// checks if coordinate is in the explored set
+	private boolean inExploredMap(int x, int y) { return currentMap.containsKey(new Coordinate(x, y)); }
+	private boolean inExploredMap(Coordinate coord) { return currentMap.containsKey(coord); }
 	
+	// cleaned
 	private Coordinate getLeft(Coordinate coord , WorldSpatial.Direction orientation) {
 		switch(orientation){
-		case EAST:
-			return getNorth(coord);
-		case NORTH:
-			return getWest(coord);
-		case SOUTH:
-			return getEast(coord);
-		case WEST:
-			return getSouth(coord);
-		default:
-			return null;
-		}	
+			case EAST:
+				return getNorth(coord);
+			case NORTH:
+				return getWest(coord);
+			case SOUTH:
+				return getEast(coord);
+			case WEST:
+				return getSouth(coord);
+			default:
+				return null;
+			}	
 	}
 	private Coordinate getRight(Coordinate coord , WorldSpatial.Direction orientation) {
 		switch(orientation){
-		case EAST:
-			return getSouth(coord);
-		case NORTH:
-			return getEast(coord);
-		case SOUTH:
-			return getWest(coord);
-		case WEST:
-			return getNorth(coord);
-		default:
-			return null;
-		}	
+			case EAST:
+				return getSouth(coord);
+			case NORTH:
+				return getEast(coord);
+			case SOUTH:
+				return getWest(coord);
+			case WEST:
+				return getNorth(coord);
+			default:
+				return null;
+			}	
 	}
 	private Coordinate getFront(Coordinate coord , WorldSpatial.Direction orientation) {
 		switch(orientation){
-		case EAST:
-			return getEast(coord);
-		case NORTH:
-			return getNorth(coord);
-		case SOUTH:
-			return getSouth(coord);
-		case WEST:
-			return getWest(coord);
-		default:
-			return null;
-		}	
+			case EAST:
+				return getEast(coord);
+			case NORTH:
+				return getNorth(coord);
+			case SOUTH:
+				return getSouth(coord);
+			case WEST:
+				return getWest(coord);
+			default:
+				return null;
+			}	
 	}
 	private Coordinate getBehind(Coordinate coord , WorldSpatial.Direction orientation) {
 		switch(orientation){
-		case EAST:
-			return getWest(coord);
-		case NORTH:
-			return getSouth(coord);
-		case SOUTH:
-			return getNorth(coord);
-		case WEST:
-			return getEast(coord);
-		default:
-			return null;
-		}	
+			case EAST:
+				return getWest(coord);
+			case NORTH:
+				return getSouth(coord);
+			case SOUTH:
+				return getNorth(coord);
+			case WEST:
+				return getEast(coord);
+			default:
+				return null;
+			}	
 	}
 	
-	private Coordinate getEast(Coordinate coord) {
-		return new Coordinate(coord.x+1 , coord.y );
-	}
-	private Coordinate getWest(Coordinate coord) {
-		return new Coordinate(coord.x-1 , coord.y);
-	}
-	private Coordinate getNorth(Coordinate coord) {
-		return new Coordinate(coord.x , coord.y +1 );
-	}
-	private Coordinate getSouth(Coordinate coord) {
-		return new Coordinate(coord.x , coord.y -1 );
-	}
+	// cleaned
+	private Coordinate getEast(Coordinate coord) { return new Coordinate(coord.x+1 , coord.y); }
+	private Coordinate getWest(Coordinate coord) { return new Coordinate(coord.x-1 , coord.y); }
+	private Coordinate getNorth(Coordinate coord) { return new Coordinate(coord.x , coord.y+1); }
+	private Coordinate getSouth(Coordinate coord) { return new Coordinate(coord.x , coord.y-1); }
 }

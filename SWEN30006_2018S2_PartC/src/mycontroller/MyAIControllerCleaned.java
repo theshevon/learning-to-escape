@@ -82,7 +82,7 @@ public class MyAIControllerCleaned extends CarController{
 		/**
 		 * sets the damage and distance values to their default values
 		 */
-		public void clearScores() {
+		public void resetScores() {
 			this.damage = Integer.MAX_VALUE;
 			this.distance= Integer.MAX_VALUE;
 		}
@@ -110,6 +110,7 @@ public class MyAIControllerCleaned extends CarController{
 		addToMap(currentMap, getMap(), MapTile.Type.WALL);
 	}
 
+	// cleaned
 	@Override
 	public void update() {
 		
@@ -128,6 +129,7 @@ public class MyAIControllerCleaned extends CarController{
 		determineNextMove();
 	}
 
+	// cleaned
 	private void determineNextMove() {
 				
 		// find the lowest scoring tiles for each target(ie. key, edge, health, exit)
@@ -162,57 +164,41 @@ public class MyAIControllerCleaned extends CarController{
 
 	}
 
-	// add new tiles, checks for edges
-	private void updateMapData() {
-		
-		// add new possible edge tiles before map is updated
-		addPossibleEdges();	
-		
-		// add the viewed tiles to the current map
-		addToMap(currentMap, getView());
-
-		// checks all edges, removing those that are not
-		checkEdges();
-		calculateDistances();
-	}
-	
+	// cleaned
 	private void calculateDistances() {
 
-		clearScores();
-		updateInitialCoords();
+		resetScores();
+		updateAdjacentTiles();
 		
-		ArrayList<Coordinate> unexploredKeys = removeWalls();
-		unexploredKeys.remove(carCoord);
+		ArrayList<Coordinate> unexploredCoords = getNonWallCoords();
+		unexploredCoords.remove(carCoord);
 		
-		findShortestDistances(unexploredKeys);
-		
-		//clear previous scores
-		//set initial conditions
-		//store all possible nodes in a list
-		//have different movement conditions per different tiles
-		//pick the lowest scoring item, update the tiles surrounding it
-		//if a grass tile is reached, iterate through until a non grass tile is reached, (mark the distance for each)
+		findShortestDistances(unexploredCoords);
 	}
 	
-	private void findShortestDistances(ArrayList<Coordinate> unexploredKeys) {
+	private void findShortestDistances(ArrayList<Coordinate> unexploredCoords) {
 		Coordinate currentCoord;
-		while(unexploredKeys.size() !=0) {
-			currentCoord = selectLowestScoring(unexploredKeys);
-			//possible path
+		
+		while (unexploredCoords.size() != 0) {
+			
+			currentCoord = selectLowestScoring(unexploredCoords);
+			
+			// possible path
 			if(currentCoord != null) {
 				updateScore(getNorth(currentCoord), currentCoord);
 				updateScore(getSouth(currentCoord), currentCoord);
 				updateScore(getEast(currentCoord), currentCoord);
 				updateScore(getWest(currentCoord), currentCoord);
-				unexploredKeys.remove(currentCoord);
+				unexploredCoords.remove(currentCoord);
 			}
 			else {
-				//breaks if no max value found
+				// break if no max value found
 				break;
 			}
 		}
 	}
 	
+	// cleaned
 	private Coordinate selectLowestScoring(ArrayList<Coordinate> keyCoordinates){
 		
 		int tempDamage = Integer.MAX_VALUE;
@@ -237,60 +223,62 @@ public class MyAIControllerCleaned extends CarController{
 		return nextCoord;
 	}
 
-	private ArrayList<Coordinate> removeWalls() {
-		ArrayList<Coordinate> tempList = new ArrayList<>();
-		for(Coordinate coord : currentMap.keySet()) {
-			if(currentMap.get(coord).getType() != MapTile.Type.WALL){
-				tempList.add(coord);
+	// cleaned
+	private ArrayList<Coordinate> getNonWallCoords() {
+		
+		ArrayList<Coordinate> nonWallCoords = new ArrayList<>();
+		
+		for (Coordinate coord : currentMap.keySet()) {
+			if (currentMap.get(coord).getType() != MapTile.Type.WALL){
+				nonWallCoords.add(coord);
 			}
 		}
-		return tempList;
-		
+		return nonWallCoords;
 	}
 	
-	private void clearScores() {
-		for(Coordinate coord: currentMap.keySet()) {
-			currentMap.get(coord).clearScores();
+	// cleaned
+	private void resetScores() {
+		for (Coordinate coord : currentMap.keySet()) {
+			currentMap.get(coord).resetScores();
 		}
 	}
 
-	private void updateInitialCoords(){
+	// cleaned
+	private void updateAdjacentTiles(){
 
-		//Initialize starting coordinate
 		ArrayList<Coordinate> tempPath = new ArrayList<>();
-		//tempPath.add(carCoord);
+
 		currentMap.get(carCoord).setDamage(0);
 		currentMap.get(carCoord).setDistance(0);
 	
 		
-		//if moving
-		//update front and sides as normal cost (in direction of movement)
-		//update rear to be cost of coming to a halt +normal cost
-		if(carSpeed>0) {
+		// if moving
+		// update front and sides as normal cost (in direction of movement)
+		// update rear to be cost of coming to a halt + normal cost
+		if(carSpeed > 0) {
+			
 			//update behind
 			int tempDamage = 0;
-			if( currentMap.get(carCoord).getTile() instanceof LavaTrap){
-				tempDamage =LAVA_DAMAGE;
-			}
-			/*experiment with removing pointer to self*/
-			if(movingForward) {
-				updateScore(getBehind(carCoord, carDirection), carCoord ,tempDamage, 1, tempPath );
+			if (currentMap.get(carCoord).getTile() instanceof LavaTrap) tempDamage = LAVA_DAMAGE;
+			
+			if (movingForward) {
+				updateScore(getBehind(carCoord, carDirection), carCoord, tempDamage, 1, tempPath);
 				updateScore(getFront(carCoord, carDirection), carCoord);
-			}
-			else {
-				updateScore(getFront(carCoord, carDirection), carCoord ,tempDamage, 1, tempPath );
+			}else {
+				// moving in reverse
+				updateScore(getFront(carCoord, carDirection), carCoord, tempDamage, 1, tempPath);
 				updateScore(getBehind(carCoord, carDirection), carCoord);
 			}
-			//only update left and right if not on grass
-			if(!(currentMap.get(carCoord).getTile() instanceof GrassTrap)) {
+			
+			// only update left and right if not on grass
+			if (!(currentMap.get(carCoord).getTile() instanceof GrassTrap)) {
 				updateScore(getLeft(carCoord, carDirection), carCoord);
 				updateScore(getRight(carCoord, carDirection), carCoord);
 			}
 		}
 		
-		//if stationary
-		//update behind and front as normal cost
-		//for sides find min of moving forwards than back + normal cost left or right
+		// if stationary
+		// update behind and front as normal cost
 		else {
 			updateScore(getFront(carCoord, carDirection),carCoord);
 			updateScore(getBehind(carCoord, carDirection), carCoord);
@@ -298,6 +286,7 @@ public class MyAIControllerCleaned extends CarController{
 
 	}
 
+	// cleaned
 	/**
 	 * @return a list of coordinates of the tiles that contain keys that have not yet been collected
 	 */
@@ -379,10 +368,10 @@ public class MyAIControllerCleaned extends CarController{
 		}
 	}
 	
-	private void updateScore(Coordinate subjectCoord , Coordinate sourceCoord, int damage, int distance, ArrayList<Coordinate> path ) {
+	private void updateScore(Coordinate targetCoord , Coordinate sourceCoord, int damage, int distance, ArrayList<Coordinate> path ) {
 
 		//checks if the tile is on the current map
-		if(currentMap.containsKey(subjectCoord)) {
+		if(currentMap.containsKey(targetCoord)) {
 			ArrayList<Coordinate> potentialPath = new ArrayList<>(path);
 			int potentialDistance = distance;
 			int potentialDamage = damage;
@@ -391,7 +380,7 @@ public class MyAIControllerCleaned extends CarController{
 
 			//used for 
 			TileData sourceData = currentMap.get(sourceCoord);
-			TileData subjectData = currentMap.get(subjectCoord);
+			TileData subjectData = currentMap.get(targetCoord);
 			
 
 			
@@ -401,7 +390,7 @@ public class MyAIControllerCleaned extends CarController{
 			
 				//if grass tile, keep updating tiles in a straight line until a non grass tile is reached
 				if(sourceData.getTile() instanceof GrassTrap) {
-					updateGrassScore(subjectCoord, sourceCoord, potentialDamage, potentialDistance, potentialPath);
+					updateGrassScore(targetCoord, sourceCoord, potentialDamage, potentialDistance, potentialPath);
 				}
 				else {
 					potentialDistance ++;
@@ -409,27 +398,27 @@ public class MyAIControllerCleaned extends CarController{
 					if(subjectData.getTile() instanceof LavaTrap){
 						potentialDamage= potentialDamage + LAVA_DAMAGE;
 					}
-					updateTile(subjectCoord, potentialDamage, potentialDistance, potentialPath);
+					updateTile(targetCoord, potentialDamage, potentialDistance, potentialPath);
 				}
 			}
 
 		}
 	}
 	
-	private void updateScore(Coordinate subjectCoord , Coordinate sourceCoord) {
+	private void updateScore(Coordinate targetCoord , Coordinate sourceCoord) {
 
 		if(currentMap.containsKey(sourceCoord)){
 			ArrayList<Coordinate> potentialPath = new ArrayList<Coordinate>();
-			updateScore(subjectCoord,sourceCoord, currentMap.get(sourceCoord).getDamage() , currentMap.get(sourceCoord).getDistance(), potentialPath );	
+			updateScore(targetCoord,sourceCoord, currentMap.get(sourceCoord).getDamage() , currentMap.get(sourceCoord).getDistance(), potentialPath );	
 		}
 
 	}
 	
-	private void updateGrassScore(Coordinate subjectCoord , Coordinate sourceCoord, int potentialDamage, int potentialDistance, ArrayList<Coordinate> path) {
-		int xdiff = subjectCoord.x -sourceCoord.x;
-		int ydiff = subjectCoord.y - sourceCoord.y;
+	private void updateGrassScore(Coordinate targetCoord , Coordinate sourceCoord, int potentialDamage, int potentialDistance, ArrayList<Coordinate> path) {
+		int xdiff = targetCoord.x -sourceCoord.x;
+		int ydiff = targetCoord.y - sourceCoord.y;
 		ArrayList<Coordinate> potentialPath = new ArrayList<>(path);
-		Coordinate currentCoord= subjectCoord;
+		Coordinate currentCoord= targetCoord;
 		
 		//ensures that tiles outisde the map are not indexed
 		while(currentMap.containsKey(currentCoord) ) {
@@ -448,7 +437,7 @@ public class MyAIControllerCleaned extends CarController{
 				if(currentData.getTile() instanceof LavaTrap){
 					potentialDamage= potentialDamage + LAVA_DAMAGE;
 				}
-				updateTile(subjectCoord, potentialDamage, potentialDistance, potentialPath);
+				updateTile(targetCoord, potentialDamage, potentialDistance, potentialPath);
 				break;
 			}
 			else {
@@ -478,99 +467,109 @@ public class MyAIControllerCleaned extends CarController{
 		}
 	}
 	 
+	// cleaned
+	// adds new tiles to the map and finds new edges
+	private void updateMapData() {
+			
+		// add new possible edge tiles before map is updated
+		addPossibleEdges();	
+			
+		// add the viewed tiles to the current map
+		addToMap(currentMap, getView());
+
+		// checks all edges, removing those that are not
+		validateEdges();
+		
+		// finds the distance to each tile
+		calculateDistances();
+	}
+		
+	// cleaned
 	private void addPossibleEdges() {
-		//horizontal and vertical lines 
-		Coordinate hCoords;
-		Coordinate vCoords;
-		for( int offset1 : new int[]{-4,4}) {
-			for( int offset2 = -4 ; offset2 <=4; offset2++) {
+			
+		for (int xOffset = -4; xOffset <=4; xOffset++) {
+			for (int yOffset = -4; yOffset <= 4; yOffset ++) {
+					
+				if (xOffset > -4 && xOffset < 4 && yOffset >= -3 && yOffset <= 3) continue;
 				
-				hCoords=  new Coordinate(carCoord.x+ offset1, carCoord.y+ offset2);
-
-				//adds coordinates of edge tiles if they are not in past map ( as it hasn't been updated yet)
-				if(insideBoundries(hCoords) && !inExploredMap(hCoords)) {
-					edgeTileCoordinates.add(hCoords);
-				}
-
-			}
-			for( int offset3 = -3 ; offset3 <=3; offset3++) {
-				
-				vCoords=  new Coordinate(carCoord.x+ offset3, carCoord.y+ offset1);
-				//adds coordinates of edge tiles if they are not in past map ( as it hasn't been updated yet)
-				if(insideBoundries(vCoords) && !inExploredMap(vCoords)) {
-					edgeTileCoordinates.add(vCoords);
-				}
-
+				Coordinate coord = new Coordinate(carCoord.x + xOffset, carCoord.y + yOffset);
+				if (insideBoundaries(coord) && !inExploredMap(coord)) edgeTileCoordinates.add(coord);
 			}
 		}
+		
 	}
 	
-	private void checkEdges() {
-		boolean hasUnexplored = false;
-		ArrayList<Coordinate> tempList = new ArrayList<Coordinate>();
+	// cleaned
+	private void validateEdges() {
 		
-		for( Coordinate coord: edgeTileCoordinates) {
+		boolean hasAdjacentUnexploredTile = false;
+		ArrayList<Coordinate> nonEdgeCoordinates = new ArrayList<Coordinate>();
+		
+		for (Coordinate coord : edgeTileCoordinates) {
 			
-			//Ensures no walls or empty tiles can be edges
-			if(currentMap.get(coord).getTile().isType(MapTile.Type.WALL)
-			 ||currentMap.get(coord).getTile().isType(MapTile.Type.EMPTY)) {
-				tempList.add(coord);
+			hasAdjacentUnexploredTile = false; 
+			
+			MapTile tile = currentMap.get(coord).getTile();
+			
+			// ensure that no walls or empty tiles can be edges
+			if (tile.isType(MapTile.Type.WALL) || tile.isType(MapTile.Type.EMPTY)) {
+				nonEdgeCoordinates.add(coord);
 			}
-			//Ensures each edge has at least one adjacent unexplored square
-			else {
-				for( int offset : new int[]{ -1, 1}) {
-					if( (insideBoundries(coord.x + offset, coord.y) && !inExploredMap(coord.x + offset, coord.y))
-					  ||(insideBoundries(coord.x, coord.y+ offset) && !inExploredMap(coord.x , coord.y + offset))) {
-						hasUnexplored =true; 
 
+			// ensures each edge has at least one adjacent unexplored tile
+			else {
+				for(int offset : new int[]{-1, 1}) {
+					if ((insideBoundaries(coord.x + offset, coord.y) && !inExploredMap(coord.x + offset, coord.y))
+					    || (insideBoundaries(coord.x, coord.y+ offset) && !inExploredMap(coord.x , coord.y + offset))) {
+						hasAdjacentUnexploredTile = true; 
 					}
 				}
-				if(hasUnexplored == false) {
-					tempList.add(coord);
-				}
-				hasUnexplored = false; 
+				
+				if(!hasAdjacentUnexploredTile) nonEdgeCoordinates.add(coord);
 			}
 		}
-		for(Coordinate coord : tempList) {
+		
+		// remove all non-edges from the list of edge coordinates
+		for (Coordinate coord : nonEdgeCoordinates) {
 			edgeTileCoordinates.remove(coord);
 		}
 	}
 	
-	private void checkForUseful(Coordinate coord, MapTile tile){
+	// cleaned 
+	private void analyseTile(Coordinate coord, MapTile tile){
 		
-		if(tile.isType(MapTile.Type.FINISH)) {
+		if (tile.isType(MapTile.Type.FINISH)) {
 			exitTileCoordinates.add(coord);
-		}
-		else if(tile.isType(MapTile.Type.TRAP)){
+		}else if(tile.isType(MapTile.Type.TRAP)){
 			
-			if( ((TrapTile)tile).getTrap()== "lava" ) {
-				if(((LavaTrap)tile).getKey()>0) {
-					keyTileCoordinates.add(coord);
-				}
-			}
-			else if(((TrapTile)tile).getTrap()== "health" ) {
+			if (((TrapTile)tile).getTrap() == "lava" && ((LavaTrap)tile).getKey() > 0) {
+				keyTileCoordinates.add(coord);
+			} else if(((TrapTile)tile).getTrap() == "health" ) {
 				healthTileCoordinates.add(coord);
 			}
 		} 
 	}
+	
+	
 
 	// =================================== MAP CLASS STUFF ================================================//
 	
 	//Adds all the provided Maptile's into the current map
 	//Adds coord of points of interests (excluding edge tiles)
-	private void addToMap(HashMap<Coordinate, TileData> currentMap, HashMap<Coordinate, MapTile> ProvidedMap) {
+	private void addToMap(HashMap<Coordinate, TileData> currentMap, HashMap<Coordinate, MapTile> currentView) {
 		
-		for( Coordinate coord : ProvidedMap.keySet()) {
+		for( Coordinate coord : currentView.keySet()) {
 			//adds useful coords to appropriate lists
 
-			if(insideBoundries(coord) && !inExploredMap(coord)) {
-				currentMap.put(coord, new TileData(ProvidedMap.get(coord)));
-				checkForUseful(coord, ProvidedMap.get(coord));
+			if(insideBoundaries(coord) && !inExploredMap(coord)) {
+				currentMap.put(coord, new TileData(currentView.get(coord)));
+				analyseTile(coord, currentView.get(coord));
 			}
 		}
 	}
 	//Only adds Maptile's of a certain type
-	private void addToMap(HashMap<Coordinate, TileData> currentMap, HashMap<Coordinate, MapTile> ProvidedMap, MapTile.Type type) {
+	private void addToMap(HashMap<Coordinate, TileData> currentMap, HashMap<Coordinate, MapTile> ProvidedMap, 
+			MapTile.Type type) {
 		
 		for( Coordinate coord : ProvidedMap.keySet()) {
 			if(ProvidedMap.get(coord).getType() == type) {
@@ -580,14 +579,14 @@ public class MyAIControllerCleaned extends CarController{
 	}
 		
 	//checks if a coordinate is inside the map boundaries (Integers)
-	private boolean insideBoundries(int x , int y) {
+	private boolean insideBoundaries(int x , int y) {
 		return x < mapWidth() && x >= 0 && y < mapHeight() && y >= 0;
 	}
-	private boolean insideBoundries(Coordinate coord) {
-		return insideBoundries(coord.x, coord.y);
+	private boolean insideBoundaries(Coordinate coord) {
+		return insideBoundaries(coord.x, coord.y);
 	}
 	
-	//checks if coordinate is in the explored set
+	//checks if coordinate is in the explored set0
 	private boolean inExploredMap(int x, int y) {
 		return currentMap.containsKey(new Coordinate(x, y));
 	}
@@ -656,7 +655,7 @@ public class MyAIControllerCleaned extends CarController{
 		return new Coordinate(coord.x+1 , coord.y );
 	}
 	private Coordinate getWest(Coordinate coord) {
-		return new Coordinate(coord.x-1 , coord.y );
+		return new Coordinate(coord.x-1 , coord.y);
 	}
 	private Coordinate getNorth(Coordinate coord) {
 		return new Coordinate(coord.x , coord.y +1 );
@@ -664,7 +663,4 @@ public class MyAIControllerCleaned extends CarController{
 	private Coordinate getSouth(Coordinate coord) {
 		return new Coordinate(coord.x , coord.y -1 );
 	}
-
-	
-
 }

@@ -27,7 +27,8 @@ public class MyAIController extends CarController{
 		private int distance; 
 		private MapTile tile;
 		//public WorldSpatial.Direction direction; 
-		ArrayList<Coordinate> path;
+		private ArrayList<Coordinate> path;
+		
 		public TileData(MapTile tile) {
 			this.tile= tile;
 			damage = Integer.MAX_VALUE;
@@ -39,19 +40,24 @@ public class MyAIController extends CarController{
 		public MapTile getTile() {
 			return tile;
 		}
+		
 		public Integer getDamage() {
 			return damage;
 		}
+		
 		public Integer getDistance() {
 			return distance;
 		}
+		
 		public void setDamage(Integer damage) {
 			 this.damage= damage;
 		}
+		
 		public void clearScores() {
 			this.damage = Integer.MAX_VALUE;
 			this.distance= Integer.MAX_VALUE;
 		}
+		
 		public void setDistance(Integer distance) {
 			 this.distance= distance;
 		}
@@ -65,11 +71,10 @@ public class MyAIController extends CarController{
 		public ArrayList<Coordinate> getPath() {
 			return path;
 		}
-		
 	}
 
-	boolean movingForward;
-	int LAVADAMAGE= 1;
+	private boolean movingForward;
+	private int LAVADAMAGE= 1;
 	//The information currently known about the map
 	public HashMap<Coordinate, TileData> currentMap;
 	public ArrayList<Coordinate> keyTiles;
@@ -77,10 +82,10 @@ public class MyAIController extends CarController{
 	public ArrayList<Coordinate> healthTiles;
 	public ArrayList<Coordinate> exitTiles; 
 	//information about the car at this instance
-	HashMap<Coordinate, MapTile> currentView;
-	Coordinate carCoord;
-	float carSpeed;
-	WorldSpatial.Direction carDirection;
+	private HashMap<Coordinate, MapTile> currentView;
+	private Coordinate carCoord;
+	private float carSpeed;
+	private WorldSpatial.Direction carDirection;
 
 
 	public MyAIController(Car car) {
@@ -109,7 +114,7 @@ public class MyAIController extends CarController{
 		
 	}
 	
-	//logic for determining next move , note currently doesn't look for health tiles
+	// logic for determining next move , note currently doesn't look for health tiles
 	// selectLowestScoring(healthTiles) can be used
 	private void determineMove() {
 		

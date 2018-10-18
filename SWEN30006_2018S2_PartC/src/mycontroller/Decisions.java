@@ -1,6 +1,7 @@
 package mycontroller;
 
 
+import org.apache.logging.log4j.core.util.Assert;
 import tiles.HealthTrap;
 import utilities.Coordinate;
 
@@ -55,7 +56,16 @@ public class Decisions {
             }
         }
 
-        return map.findPath(target, carCoord);
+        try {
+            return map.findPath(target, carCoord);
+        }
+        catch (NullPointerException e) {
+            System.out.println("Nowhere to go :(");
+            System.exit(0);
+        }
+
+        return null;
+
     }
 
 

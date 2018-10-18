@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.2" tiledversion="1.2.0" orientation="orthogonal" renderorder="right-down" width="7" height="3" tilewidth="32" tileheight="32" infinite="0" nextlayerid="13" nextobjectid="1">
+ <tileset firstgid="1" source="tilesets/meta.tsx"/>
+ <tileset firstgid="3" source="tilesets/road.tsx"/>
+ <tileset firstgid="4" source="tilesets/traps.tsx"/>
+ <tileset firstgid="196" source="tilesets/wallsandroofs.tsx"/>
+ <layer id="9" name="Road" width="7" height="3">
+  <data encoding="csv">
+3,3,3,3,3,3,3,
+3,3,3,3,3,3,3,
+3,3,3,3,3,3,3
+</data>
+ </layer>
+ <layer id="10" name="Trap" width="7" height="3">
+  <data encoding="csv">
+0,0,0,0,0,0,0,
+0,0,163,163,163,0,0,
+0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="11" name="Wall" width="7" height="3">
+  <data encoding="csv">
+263,263,263,263,263,263,263,
+263,0,0,0,0,0,263,
+263,263,263,263,263,263,263
+</data>
+ </layer>
+ <layer id="12" name="Utility" width="7" height="3">
+  <data encoding="csv">
+0,0,0,0,0,0,0,
+0,2,0,0,0,1,0,
+0,0,0,0,0,0,0
+</data>
+ </layer>
+</map>

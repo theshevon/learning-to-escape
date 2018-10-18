@@ -135,7 +135,7 @@ public abstract class CarController {
 	}
 	
 	/**
-	 * This is the required update step for a controller.
+	 * This is the required updateBoard step for a controller.
 	 */
 	public abstract void update();
 }

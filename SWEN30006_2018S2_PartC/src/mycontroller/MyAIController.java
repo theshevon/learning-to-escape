@@ -248,7 +248,7 @@ public class MyAIController extends CarController{
 			//set initial conditions
 			//store all possible nodes in a list
 			//have different movement conditions per different tiles
-			//pick the lowest scoring item, update the tiles surrounding it
+			//pick the lowest scoring item, updateBoard the tiles surrounding it
 			//if a grass tile is reached, iterate through until a non grass tile is reached, (mark the distance for each)
 			
 			
@@ -274,10 +274,10 @@ public class MyAIController extends CarController{
 			map.setDistance(sourceCoord,0);
 				
 			//if moving
-			//update front and sides as normal cost (in direction of movement)
-			//update rear to be cost of coming to a halt +normal cost
+			//updateBoard front and sides as normal cost (in direction of movement)
+			//updateBoard rear to be cost of coming to a halt +normal cost
 			if(speed>0) {
-				//update behind
+				//updateBoard behind
 				int tempDamage = 0;
 				if( map.getTile(sourceCoord) instanceof LavaTrap){
 					tempDamage =LAVADAMAGE;
@@ -291,14 +291,14 @@ public class MyAIController extends CarController{
 					updateScore(map, getFront(sourceCoord, direction), sourceCoord ,tempDamage, 1, tempPath );
 					updateScore(map, getBehind(sourceCoord, direction), sourceCoord);
 				}
-				//only update left and right if not on grass
+				//only updateBoard left and right if not on grass
 				if(!(map.getTile(sourceCoord) instanceof GrassTrap)) {
 					updateScore(map, getLeft(sourceCoord, direction), sourceCoord);
 					updateScore(map, getRight(sourceCoord, direction), sourceCoord);
 				}
 			}
 			//if stationary
-			//update behind and front as normal cost
+			//updateBoard behind and front as normal cost
 			//for sides find min of moving forwards than back + normal cost left or right
 			else {
 				updateScore(map, getFront(sourceCoord, direction),sourceCoord);
@@ -326,7 +326,7 @@ public class MyAIController extends CarController{
 				int potentialDamage = damage;
 				potentialPath.add(sourceCoord);
 				
-				//only update if the tile is inside the current map is not a Wall or MudTrap
+				//only updateBoard if the tile is inside the current map is not a Wall or MudTrap
 				if( map.getType(subjectCoord) != MapTile.Type.WALL && !(map.getTile(subjectCoord) instanceof MudTrap)) {
 					
 				

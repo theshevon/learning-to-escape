@@ -3,9 +3,7 @@ package mycontroller;
 import utilities.Coordinate;
 import world.WorldSpatial;
 
-public class Direction3 {
-
-
+public class Direction {
 
     public static Coordinate getLeft(Coordinate coord , WorldSpatial.Direction orientation) {
         switch(orientation){

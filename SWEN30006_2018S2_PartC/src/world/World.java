@@ -90,10 +90,10 @@ public class World {
 						MapTile newTile = null; // Only stays null if exception/exit
 						int reverseYAxis = layer.getHeight()-y;
 						Coordinate newCoord = new Coordinate(x, reverseYAxis);
-						// System.out.println(layerName+" - Coord: "+newCoord+" ID: "+cell.getTile().getId());
+						// System.out.println(layerName+" - Coord: "+newCoord+" ID: "+cell.getData().getId());
 						switch(layerName) {
 						case "Trap":
-							// assert(cell.getTile().getProperties().get("type") != null);
+							// assert(cell.getData().getProperties().get("type") != null);
 							String className = MapTile.tileNameSpace + (String) cell.getTile().getProperties().get("type");
 							try {
 								newTile = (TrapTile) Class.forName( className ).newInstance();

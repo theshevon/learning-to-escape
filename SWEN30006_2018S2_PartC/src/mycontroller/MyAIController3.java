@@ -1,7 +1,6 @@
 package mycontroller;
 
 import controller.CarController;
-import tiles.*;
 import tiles.MapTile;
 import tiles.LavaTrap;
 import utilities.Coordinate;
@@ -9,7 +8,7 @@ import world.Car;
 import world.WorldSpatial;
 import java.util.ArrayList;
 
-import static mycontroller.Direction3.*;
+import static mycontroller.Direction.*;
 
 
 /**
@@ -19,21 +18,20 @@ import static mycontroller.Direction3.*;
 public class MyAIController3 extends CarController{
 
 
-
 	// information about the car at this instance
 	private WorldSpatial.Direction carDirection;
 	private Coordinate carCoord;
 	private float carSpeed;
 	private boolean movingForward;
 
-	private Map3 map;
+	private Map map;
 	
 	public MyAIController3(Car car) {
-		super(car);		
+		super(car);
 
-		map = new Map3(mapWidth(), mapHeight());
+		map = new Map(mapWidth(), mapHeight());
 		// adds walls to map
-		MapUpdater3.addToMap(map, getMap(), MapTile.Type.WALL);
+		MapUpdater.addToMap(map, getMap(), MapTile.Type.WALL);
 	}
 
 	@Override
@@ -53,17 +51,17 @@ public class MyAIController3 extends CarController{
 
 
 		// find unexplored regions
+		MapUpdater.updateBoard(map, carCoord, getView());
 
-
-		MapUpdater3.update(map, carCoord, getView());
+		// update 'scores'
+		MapUpdater.updateScores(map, carSpeed, carCoord, carDirection, movingForward);
 
 		// determine where to move to
-		Decisions3.determineNextMove(map, carCoord, getKeys());
+		performMove(Decisions.determineNextMove(map, getKeys(), numKeys(), carCoord, getHealth()));
 	}
 
-
 	
-	private void peformMove(Coordinate destination) {
+	private void performMove(Coordinate destination) {
 		//need to slow down
 		if(carSpeed >0) {
 			if(destination.equals(carCoord)) {

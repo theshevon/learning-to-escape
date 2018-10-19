@@ -1,19 +1,13 @@
 package mycontroller;
 
-import tiles.GrassTrap;
-import tiles.LavaTrap;
 import tiles.MapTile;
-import tiles.MudTrap;
 import utilities.Coordinate;
-
 import java.util.ArrayList;
-
 
 /**
  * Class used to store information about a coordinate.
  * Used when determining the shortest route to each coordinate.
  */
-
 public class CoordinateData {
 
     private int damage;
@@ -28,75 +22,82 @@ public class CoordinateData {
         path = new ArrayList<Coordinate>();
     }
 
-
-
+    /**
+     * Updates the potential damage, distance and path to a tile
+     * @param potentialDamage Potential damage when traversing to the tile?????????????????????????????????
+     * @param potentialDistance Potential distance to a tile
+     * @param potentialPath Potential path to a tile
+     */
     public void updateTile(int potentialDamage, int potentialDistance, ArrayList<Coordinate> potentialPath) {
 
-
-        if(potentialDamage < damage) {
-            // code duplication????
+        if ((potentialDamage < damage) || (potentialDamage == damage && potentialDistance < distance)) {
             damage = potentialDamage;
             distance = potentialDistance;
             path = new ArrayList<Coordinate>(potentialPath);
         }
-        else if(potentialDamage == damage) {
-
-            if(potentialDistance < distance) {
-                // code duplication????
-                //damage = potentialDamage;
-                distance = potentialDistance;
-                path = new ArrayList<Coordinate>(potentialPath);
-            }
-        }
     }
 
-
-
-
-    //------------------------Getters and Setters------------------------------------
-
+    /**
+     * @return The Map Tile at the coordinate
+     */
     public MapTile getTile() {
         return tile;
     }
-    public Integer getDamage() {
+    
+    /**
+     * @return The damage incurred??????????????????????????????????????????????????????????????????????????
+     */
+    public int getDamage() {
         return damage;
     }
-    public void setDamage(Integer damage) {
+    
+    /**
+     * @param damage????????????????????????????????????????????????????????????????????????????????????????
+     */
+    public void setDamage(int damage) {
         this.damage = damage;
     }
-    public Integer getDistance() {
+    
+    /**
+     * @return ????????????????????????????????????????????????????????????????????????????????????????
+     */
+    public int getDistance() {
         return distance;
     }
-    public void setDistance(Integer distance) {
+    
+    /**
+     * @param distance ????????????????????????????????????????????????????????????????????????????????????????
+     */
+    public void setDistance(int distance) {
         this.distance= distance;
     }
 
 
     /**
      * Replaces the current path with an updated (cheaper) path
-     * param: list of coordinates making up the new path
+     * @param List of coordinates making up the new path
      */
     public void replacePath(ArrayList<Coordinate> path) {
         this.path = new ArrayList<Coordinate>(path);
     }
 
     /**
-     * Gets the path to a tile.
-     * @return a list of coordinates making up the path
+     * Gets the path to a tile
+     * @return A list of coordinates making up the path
      */
     public ArrayList<Coordinate> getPath() {
         return path;
     }
 
     /**
-     * @return the type of the tile
+     * @return The type of the tile
      */
     public MapTile.Type getType() {
         return tile.getType();
     }
 
     /**
-     * sets the damage and distance values to their default values
+     * Sets the damage and distance values to their default values
      */
     public void resetScore() {
         this.damage = Integer.MAX_VALUE;

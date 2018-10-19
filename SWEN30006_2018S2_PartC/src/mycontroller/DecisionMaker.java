@@ -9,6 +9,10 @@ import java.math.*;
 
 /**
  * Class used in determining best move to make in order to collect all the keys and escape the map
+ *Go for keys if there are still keys to find
+ *If all the keys are found , go for exit
+ *If there are no keys or exits , go for edges (ie explore the map )
+ *Go for health tile if you don't have enough health to reach the target
  */
 public class DecisionMaker implements EscapeStrategy{
 	
@@ -18,6 +22,7 @@ public class DecisionMaker implements EscapeStrategy{
     public Coordinate determineNextMove(Map map, int nCollectedKeys, int totalKeys, Coordinate carCoord, float health) {
 
         // find the lowest scoring tiles for each target(ie. key, edge, health, exit)
+		//ie the lowest by damage then distance 
 		//keys are null if there are no reachable coords of that type 
         Coordinate targetKey = selectLowestScoring(map, map.getKeyTileCoordinates());
         Coordinate targetEdge = selectLowestScoring(map, map.getEdgeTileCoordinates());
@@ -26,7 +31,8 @@ public class DecisionMaker implements EscapeStrategy{
 
         Coordinate target = null;
 
-        // If there's a key haven't collected and the location of the exit is known, set it as the target
+        // If there is still a key to collect set it as the target
+        //If you have found all the keys, set target as exit 
         if (nCollectedKeys < totalKeys) {
             target = targetKey;
         }
@@ -34,7 +40,7 @@ public class DecisionMaker implements EscapeStrategy{
             target = targetExit;
         }
        
-        // If no tile is being targeted, target an edge
+        // If there are no reachable target, target an edge
         if (target == null) {
             	target = targetEdge;
         }    
@@ -45,8 +51,11 @@ public class DecisionMaker implements EscapeStrategy{
         }
         // If the car is on a health tile and its health is less than the health needed to survive getting
         // the next key and returning back, keep the car at its current coordinate
-        if (map.getTile(carCoord) instanceof HealthTrap && health < (2 * map.getDamage(target) + map.getDamage(targetHealth) + Math.pow(MapHandler.LAVA_DAMAGE,2))) {
-        	return carCoord;
+        //5*LAVA_DAMAGE provides the car with an additional buffer of health to explore with 
+        if (map.getTile(carCoord) instanceof HealthTrap && health != 100) {
+        	if(health < (2 * map.getDamage(target) + map.getDamage(targetHealth) + 5*MapHandler.LAVA_DAMAGE)){
+            	return carCoord;
+        	}
         }
 
         // If the location of a health tile is known and the car's health is less than the health needed to 
@@ -55,16 +64,6 @@ public class DecisionMaker implements EscapeStrategy{
         	target = targetHealth;
         }
         return map.findPath(target, carCoord);
-
-        // If the map cannot indefinitely be escaped, exit the system
-        //try {
-          //  return map.findPath(target, carCoord);
-        //} catch (NullPointerException e) {
-          //  System.out.println("Nowhere to go :(");
-            //System.exit(0);
-        //}
-
-        //return null;
     }
 
     /**

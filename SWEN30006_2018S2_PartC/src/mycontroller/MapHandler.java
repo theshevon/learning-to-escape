@@ -162,7 +162,8 @@ public class MapHandler {
     }
 
     /**
-     * ???????????????????????????????????NEEDS TO BE COMMENTED?????????????????????????????????????????????
+     * updates the damage, distance and path for the tiles adjacent to the car
+     * Updates tiles depending on car speed, direction and position 
      * @param map A map containing all the information about tiles and their respective coordinates
      * @param carSpeed The current speed of the car
      * @param carCoordinate The current coordinate of the car
@@ -172,18 +173,17 @@ public class MapHandler {
     private static void updateAdjacentTiles(Map map, float carSpeed, Coordinate carCoordinate,
             							WorldSpatial.Direction carDirection, boolean movingForward){
 
-    	// Initialise starting coordinates
+    	// Initialize starting coordinates
+    	//Sets carCoord damage and distance to 0 
 		ArrayList<Coordinate> tempPath = new ArrayList<>();
-
 		map.getCurrentMap().get(carCoordinate).setDamage(0);
         map.getCurrentMap().get(carCoordinate).setDistance(0);
+
 	
 		// if moving
 		// update front and sides as normal cost (in direction of movement)
 		// update rear to be cost of coming to a halt + normal cost
 		if (carSpeed > 0) {
-			
-			// update behind
 			int tempDamage = 0;
 			if (map.getCurrentMap().get(carCoordinate).getTile() instanceof LavaTrap) tempDamage = LAVA_DAMAGE;
 			
@@ -213,6 +213,7 @@ public class MapHandler {
 	}
 
     /**
+     * returns an ArrayList of coordinates excluding grass tiles 
      * @param map A map containing all the information about tiles and their respective coordinates
      * @return A list of coordinates of non-grass tiles
      */
@@ -230,7 +231,9 @@ public class MapHandler {
     }
 
     /**
-     * ???????????????????????????????????NEEDS TO BE COMMENTED?????????????????????????????????????????????
+     * Updates all tiles as sources coords once
+     * Updates the lowest scoring  coords once 
+     * Ignores unreachable coords (tiles with damage = max integer size)
      * @param map A map containing all the information about tiles and their respective coordinates
      * @param Coordinates
      */
@@ -238,9 +241,10 @@ public class MapHandler {
         Coordinate currentCoordinate;
         
         while (Coordinates.size() != 0) {
-        	
+        	// gets the lowest scoring coordinate, if null  the list is empty or  the coord is unreachable
             currentCoordinate = DecisionMaker.selectLowestScoring(map, Coordinates);
             if (currentCoordinate != null) {
+            	//updates all the adjacent tiles 
                 updateScore(map, getNorth(currentCoordinate), currentCoordinate);
                 updateScore(map, getSouth(currentCoordinate), currentCoordinate);
                 updateScore(map, getEast(currentCoordinate), currentCoordinate);
@@ -255,7 +259,8 @@ public class MapHandler {
     }
 
     /**
-     * ???????????????????????????????????NEEDS TO BE COMMENTED?????????????????????????????????????????????
+     * Calculates the potential path through the source coordinate to the subject coordinate
+     * calls updateTile to compares it with the damage and distance already at the subject coordinate
      * @param map A map containing all the information about tiles and their respective coordinates
      * @param targetCoordinate Coordinate of target point
      * @param sourceCoordinate Coordinate of starting point
@@ -267,11 +272,12 @@ public class MapHandler {
             updateScore(map, targetCoordinate, sourceCoordinate, map.getDamage(sourceCoordinate) ,
                     map.getDistance(sourceCoordinate), potentialPath );
         }
-
     }
 
     /**
-     * ???????????????????????????????????NEEDS TO BE COMMENTED?????????????????????????????????????????????
+     * takes the provided damage, distance and path , adds to it the path from the source to the subject coord
+     * calls updateTile to compare it with the damage and distance already at the subject coordinate
+     * checks if the source tile is a grass tile and calls updateGrass instead
      * @param map A map containing all the information about tiles and their respective coordinates
      * @param targetCoordinate Coordinate of target point
      * @param sourceCoordinate Coordinate of starting point
@@ -310,9 +316,9 @@ public class MapHandler {
         }
     }
 
-
     /**
-     *  ???????????????????????????????????NEEDS TO BE COMMENTED?????????????????????????????????????????????
+     *  Goes forward in a straight line updating the scores of grass tiles
+     *  Stops when a non grass tile is found, updating that tile as well 
      * @param map A map containing all the information about tiles and their respective coordinates
      * @param targetCoordinate Coordinate of target point
      * @param sourceCoordinate Coordinate of starting point

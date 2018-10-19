@@ -34,6 +34,7 @@ public class MyAIController extends CarController{
 		MapHandler.addToMap(map, getMap(), MapTile.Type.WALL);
 	}
 
+	
 	@Override
 	public void update() {
 		

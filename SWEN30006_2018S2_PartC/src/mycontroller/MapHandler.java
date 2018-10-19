@@ -12,8 +12,8 @@ import static mycontroller.Direction.*;
  */
 public class MapHandler {
 
-    private static final int LAVA_DAMAGE = 5;
-    private static final int VIEW_GRID_SIZE = 9;
+    public static final int LAVA_DAMAGE = 5;
+    public static final int VIEW_GRID_SIZE = 9;
 
     /**
      * Adds new tiles to the map and checks for possible edge tiles (ones adjacent to unexplored tiles)
@@ -353,6 +353,4 @@ public class MapHandler {
         }
 
     }
-
-
 }
